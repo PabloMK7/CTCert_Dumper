@@ -49,25 +49,26 @@ int main(int argc, char* argv[])
     u32 additionalErrorCode;
     u8 ctcert[AM_NET_DEVICECERT_SIZE];
 
-    printf("amInit...");
+    printf("Dumping CTCert... ");
     Result res = c_amInit();
-    printf(" 0x%08lX\n", res);
+    if (R_FAILED(res))
+        printf("fail.\namInit: 0x%08lX\n", res);
     
     if (R_SUCCEEDED(res)) {
-        printf("amGetDeviceCert...");
         res = c_AM_GetDeviceCert(ctcert, &additionalErrorCode);
-        printf("0x%08lX, 0x%08lX\n", res, additionalErrorCode);
+        if (R_FAILED(res) || additionalErrorCode != 0)
+            printf("fail.\namGetDeviceCert: 0x%08lX, 0x%08lX\n", res, additionalErrorCode);
         c_amExit();
     }
 
-    if (R_SUCCEEDED(res)) {
+    if (R_SUCCEEDED(res) && additionalErrorCode == 0) {
         FILE *f = fopen("/CTCert.bin", "w");
         fwrite(ctcert, 1, sizeof(ctcert), f);
         fclose(f);
         
-        printf("\n\nCTCert.bin dumped to the SD card.\nNOTE: Do not share this file with anyone!\n\nPress START to exit.");
+        printf("success!\n\nCTCert.bin dumped to the SD card.\nNOTE: Do not share this file with anyone!\n\nPress START to exit.");
     } else {
-        printf("\n\nFailed to dump CTCert.bin\n\nPress START to exit.");
+        printf("\nFailed to dump CTCert.bin\n\nPress START to exit.");
     }
 
     while (aptMainLoop())
